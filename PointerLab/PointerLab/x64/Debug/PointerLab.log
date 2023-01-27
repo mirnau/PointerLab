@@ -1,2 +1,6 @@
-﻿  PointerLab.cpp
+﻿  TestBasic.cpp
+M:\PointerLab\PointerLab\PointerLab\SharedPtr.hpp(70,1): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+M:\PointerLab\PointerLab\PointerLab\SharedPtr.hpp(67,1): message : while compiling class template member function 'SharedPtr<TestChar>::SharedPtr(SharedPtr<TestChar> &)'
+M:\PointerLab\PointerLab\PointerLab\TestBasic.cpp(70,20): message : see reference to function template instantiation 'SharedPtr<TestChar>::SharedPtr(SharedPtr<TestChar> &)' being compiled
+M:\PointerLab\PointerLab\PointerLab\TestBasic.cpp(48,25): message : see reference to class template instantiation 'SharedPtr<TestChar>' being compiled
   PointerLab.vcxproj -> M:\PointerLab\PointerLab\x64\Debug\PointerLab.exe
