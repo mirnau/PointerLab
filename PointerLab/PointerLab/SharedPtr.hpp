@@ -1,6 +1,9 @@
 #pragma once
 #include <utility>
+#include <cassert>
+#include <compare>
 
+#define CHECK assert(Invariant())
 
 template<class T>
 class WeakPtr
@@ -86,24 +89,21 @@ private:
 
 public:
 
-	explicit SharedPtr(T* ptr)
+	explicit SharedPtr(T* ptr) :
+		m_ptr(ptr)
 	{
-		m_ptr = ptr;
 		m_counter = new RefCount(true);
 	}
 
-	SharedPtr(std::nullptr_t nPtr) noexcept
-	{
-		m_ptr = nullptr;
-	}
+	SharedPtr(std::nullptr_t nPtr) noexcept :
+		m_ptr(nullptr) {CHECK;}
 
-	SharedPtr() noexcept
-	{
-		m_ptr = nullptr;
-	}
+	SharedPtr() noexcept :
+		m_ptr(nullptr) {CHECK;}
 
 	~SharedPtr()
 	{
+		CHECK;
 		if (m_counter != nullptr)
 		{
 			m_counter->DecrementShared();
@@ -116,19 +116,23 @@ public:
 		}
 	}
 
-	SharedPtr(SharedPtr& sharedPtr) noexcept
+	SharedPtr(SharedPtr& sharedPtr) noexcept :
+		m_ptr(sharedPtr.get()),
+		m_counter(sharedPtr.m_counter) 
 	{
-		m_ptr = sharedPtr.get();
-		m_counter = sharedPtr.m_counter;
 		m_counter->IncrementShared();
+
+		CHECK;
 	}
 
-	SharedPtr(SharedPtr&& sharedPtr)
+	SharedPtr(SharedPtr&& sharedPtr) :
+		m_counter(sharedPtr.m_counter),
+		m_ptr(std::move(sharedPtr.m_ptr))
 	{
-		m_ptr = std::move(sharedPtr.m_ptr);
-		m_counter = sharedPtr.m_counter;
 		sharedPtr.m_ptr = nullptr;
 		sharedPtr.m_counter = nullptr;
+
+		CHECK;
 	}
 
 	T* get()
@@ -146,11 +150,18 @@ public:
 		{
 			return m_counter->SharedPtrSize();
 		}
+
+		CHECK;
 	}
 
-	bool Invariant()
+	bool Invariant() const noexcept
 	{
-		return true;
+		if (m_ptr == nullptr)
+		{
+			return true;
+		}
+
+		return m_counter->SharedPtrSize();
 	}
 
 	SharedPtr operator=(SharedPtr& sharedPtr)
@@ -158,6 +169,21 @@ public:
 		m_counter = sharedPtr.m_counter->IncrementShared(); //RefCount - objekt 
 		m_ptr = sharedPtr.get();
 		return *this;
+	}
+
+	T& operator*()
+	{
+		return *m_ptr;
+	}
+
+	T* operator->()
+	{
+		return m_ptr;
+	}
+
+    operator bool() const
+	{
+		return (m_ptr != nullptr);
 	}
 
 	//
@@ -171,10 +197,11 @@ public:
 	//	return 0;
 	//}
 
-	//friend bool operator==(SharedPtr& lhs, SharedPtr& rhs)
-	//{
-	//	return true;
-	//}
+	/*friend bool operator==(const SharedPtr& lhs, const SharedPtr& rhs)
+	{
+		return lhs.m_ptr == rhs.m_ptr;
+	}*/
+
 
 	//SharedPtr(WeakPtr& sharedPtr) //VG
 	//{

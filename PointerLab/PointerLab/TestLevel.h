@@ -12,7 +12,7 @@
 #endif
 #endif  // _DEBUG
 
-#define LEVEL 2
+#define LEVEL 4
 //#define G_BETYG
 //#define VG_BETYG
 

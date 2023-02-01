@@ -47,8 +47,8 @@ void TestBasic() {
         TestChar* tp = new TestChar('a');
         TestShared p1(tp);
         using X = decltype(&TestShared::get);
-        //using Y = std::invoke_result_t<X, TestShared>;
-        //static_assert(std::is_same_v < Y, TestChar*>, "");
+        using Y = std::invoke_result_t<X, TestShared>;
+        static_assert(std::is_same_v < Y, TestChar*>, "");
         assert(p1.get() == tp);
         assert(p1.Invariant());
         assert(p1.use_count() == 1);
