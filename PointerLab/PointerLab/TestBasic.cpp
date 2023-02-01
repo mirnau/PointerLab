@@ -98,9 +98,12 @@ void TestBasic() {
         p1 = std::move(p3);
         assert(!p3);
         assert(p1->_c == 'c');
-        //p1 = std::move(p1);
-        //assert(p1);
-        //assert(p1->_c == 'c');
+        { //LÄRARENS MARKERING
+
+            //p1 = std::move(p1);
+            //assert(p1);
+            //assert(p1->_c == 'c');
+        }
         p1.reset();
         assert(p1.use_count() == 0 && !p1);
     }

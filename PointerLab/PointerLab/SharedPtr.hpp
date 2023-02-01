@@ -47,7 +47,7 @@ struct RefCount
 		
 	}
 
-	size_t SharedPtrSize() const
+	size_t SharedPtrSize()
 	{
 		return m_shared;
 	}
@@ -154,6 +154,15 @@ public:
 		CHECK;
 	}
 
+	void reset()
+	{
+		m_counter->DecrementShared();
+		delete m_counter;
+		delete m_ptr;
+		m_counter = nullptr;
+		m_ptr = nullptr;
+	}
+
 	bool Invariant() const noexcept
 	{
 		if (m_ptr == nullptr)
@@ -164,10 +173,33 @@ public:
 		return m_counter->SharedPtrSize();
 	}
 
-	SharedPtr operator=(SharedPtr& sharedPtr)
+	SharedPtr& operator=(const SharedPtr& sharedPtr)
 	{
-		m_counter = sharedPtr.m_counter->IncrementShared(); //RefCount - objekt 
-		m_ptr = sharedPtr.get();
+		if (&sharedPtr == this)
+		{
+			return *this;
+		}
+
+		delete m_ptr;
+		delete m_counter;
+
+		m_counter = sharedPtr.m_counter;
+		m_counter->IncrementShared();
+		m_ptr = sharedPtr.m_ptr;
+		return *this;
+	}
+
+	SharedPtr& operator=(SharedPtr&& sharedPtr)
+	{
+		m_counter->DecrementShared();
+
+		m_counter = sharedPtr.m_counter;
+		m_ptr = sharedPtr.m_ptr;
+
+		sharedPtr.m_counter = nullptr;
+		sharedPtr.m_ptr = nullptr;
+		
+		CHECK;
 		return *this;
 	}
 
@@ -197,10 +229,10 @@ public:
 	//	return 0;
 	//}
 
-	/*friend bool operator==(const SharedPtr& lhs, const SharedPtr& rhs)
+	friend bool operator==(const SharedPtr& lhs, const SharedPtr& rhs)
 	{
 		return lhs.m_ptr == rhs.m_ptr;
-	}*/
+	}
 
 
 	//SharedPtr(WeakPtr& sharedPtr) //VG
