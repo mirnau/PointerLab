@@ -246,6 +246,6 @@ public:
 
 	//SharedPtr(WeakPtr& sharedPtr) //VG
 	//{
-
+		
 	//}
 };

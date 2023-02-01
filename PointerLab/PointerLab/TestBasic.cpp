@@ -127,10 +127,10 @@ void TestBasic() {
     }
 #endif
 #if LEVEL>=7
-    {
-        auto p1 = MakeShared<TestChar>();
-        auto p2 = MakeShared<TestChar>('b');
-        assert(p1->_c == 'x' && p2->_c == 'b');
+    {   //STRUKEN I INSTRUKTIONEN
+        //auto p1 = MakeShared<TestChar>();
+        //auto p2 = MakeShared<TestChar>('b');
+        //assert(p1->_c == 'x' && p2->_c == 'b');
     }
 #endif
 #if LEVEL>=11

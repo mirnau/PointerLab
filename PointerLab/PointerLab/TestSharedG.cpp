@@ -187,8 +187,8 @@ void TestG() {
         }
         //Make shared
         {
-            auto sp1 = MakeShared<C>(1.0f);
-            assert(sp1->value == 1);
+            //auto sp1 = MakeShared<C>(1.0f);
+            //assert(sp1->value == 1);
         }}
 }
 
