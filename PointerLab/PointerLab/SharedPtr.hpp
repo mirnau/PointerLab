@@ -191,7 +191,9 @@ public:
 
 	SharedPtr& operator=(SharedPtr&& sharedPtr)
 	{
-		m_counter->DecrementShared();
+
+		delete m_ptr;
+		delete m_counter;
 
 		m_counter = sharedPtr.m_counter;
 		m_ptr = sharedPtr.m_ptr;
@@ -218,22 +220,29 @@ public:
 		return (m_ptr != nullptr);
 	}
 
-	//
-	//friend operator=(SharedPtr&& ptr)
-	//{
-	//	return *this;
-	//}
+	friend int operator<=>(SharedPtr& lhs, SharedPtr& rhs)
+	{
+		if (lhs.m_ptr < rhs.m_ptr)
+		{
+			return -1;
+		}
+		else if (lhs.m_ptr > rhs.m_ptr)
+		{
+			return 1;
+		}
 
-	//friend int operator<=>(SharedPtr& lhs, SharedPtr& rhs)
-	//{
-	//	return 0;
-	//}
+		return 0;
+	}
 
 	friend bool operator==(const SharedPtr& lhs, const SharedPtr& rhs)
 	{
 		return lhs.m_ptr == rhs.m_ptr;
 	}
 
+	friend void swap(SharedPtr& lhs, SharedPtr& rhs)
+	{
+		std::swap(lhs, rhs);
+	}
 
 	//SharedPtr(WeakPtr& sharedPtr) //VG
 	//{
