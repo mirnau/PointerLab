@@ -1,4 +1,5 @@
 #pragma once
+#include <utility>
 
 
 template<class T>
@@ -7,6 +8,7 @@ class WeakPtr
 public:
 	WeakPtr()
 	{
+
 	}
 
 	~WeakPtr()
@@ -15,17 +17,26 @@ public:
 	}
 };
 
-class RefCount
+struct RefCount
 {
-private:
-	int m_shared;
-	int m_weak;
-
-public:
 	RefCount()
 	{
 		m_shared = 0;
 		m_weak = 0;
+	}
+
+	RefCount(bool isShared)
+	{
+		if (true)
+		{
+			m_shared = 1;
+			m_weak = 0;
+		}
+		else
+		{
+			m_shared = 0;
+			m_weak = 1;
+		}
 	}
 	
 	~RefCount()
@@ -33,82 +44,91 @@ public:
 		
 	}
 
+	size_t SharedPtrSize() const
+	{
+		return m_shared;
+	}
+
 	void IncrementShared()
 	{
 		++m_shared;
 	}
 
-	bool DecrementShared()
+	void DecrementShared()
 	{
 		--m_shared;
 
-		if (m_shared <= 0)
-		{
-			if (m_weak <= 0)
-			{
-				return false;
-			}
+		//if (m_shared <= 0)
+		//{
+		//	if (m_weak <= 0)
+		//	{
+		//		return false;
+		//	}
 
-			m_shared = 0;
+		//	m_shared = 0;
 
-			return true;
-		}
+		//	return true;
+		//}
 	}
+
+private:
+	size_t m_shared;
+	size_t m_weak;
 };
 
 template< class T>
+//using IfNotSharedPtr = std::enable_if_t <(std::is_same<T, SharedPtr>)>;
 class SharedPtr
 {
 private:
 	T* m_ptr;
-	int* m_useCount;
+	RefCount* m_counter;
 
 public:
 
 	explicit SharedPtr(T* ptr)
 	{
 		m_ptr = ptr;
-		m_useCount = new int(0);
-
-		if (ptr != nullptr)
-		{
-
-		}
-
-		++m_useCount;
+		m_counter = new RefCount(true);
 	}
 
 	SharedPtr(std::nullptr_t nPtr) noexcept
 	{
 		m_ptr = nullptr;
-		m_useCount = 0;
 	}
 
 	SharedPtr() noexcept
 	{
 		m_ptr = nullptr;
-		m_useCount = 0;
 	}
 
 	~SharedPtr()
 	{
-		delete m_ptr;
+		if (m_counter != nullptr)
+		{
+			m_counter->DecrementShared();
+
+			if (m_counter->SharedPtrSize() == 0)
+			{
+				delete m_ptr;
+				delete m_counter;
+			}
+		}
 	}
 
-	//SharedPtr(WeakPtr& sharedPtr)
-	//{
-
-	//}
-
-	SharedPtr(SharedPtr& sharedPtr)
+	SharedPtr(SharedPtr& sharedPtr) noexcept
 	{
 		m_ptr = sharedPtr.get();
-		m_useCount = sharedPtr.use_count();
+		m_counter = sharedPtr.m_counter;
+		m_counter->IncrementShared();
 	}
 
 	SharedPtr(SharedPtr&& sharedPtr)
 	{
-
+		m_ptr = std::move(sharedPtr.m_ptr);
+		m_counter = sharedPtr.m_counter;
+		sharedPtr.m_ptr = nullptr;
+		sharedPtr.m_counter = nullptr;
 	}
 
 	T* get()
@@ -116,13 +136,48 @@ public:
 		return m_ptr;
 	}
 
-	size_t use_count()
+	size_t use_count() const
 	{
-		return m_useCount;
+		if (m_counter == nullptr)
+		{
+			return 0;
+		}
+		else
+		{
+			return m_counter->SharedPtrSize();
+		}
 	}
 
 	bool Invariant()
 	{
 		return true;
 	}
+
+	SharedPtr operator=(SharedPtr& sharedPtr)
+	{
+		m_counter = sharedPtr.m_counter->IncrementShared(); //RefCount - objekt 
+		m_ptr = sharedPtr.get();
+		return *this;
+	}
+
+	//
+	//friend operator=(SharedPtr&& ptr)
+	//{
+	//	return *this;
+	//}
+
+	//friend int operator<=>(SharedPtr& lhs, SharedPtr& rhs)
+	//{
+	//	return 0;
+	//}
+
+	//friend bool operator==(SharedPtr& lhs, SharedPtr& rhs)
+	//{
+	//	return true;
+	//}
+
+	//SharedPtr(WeakPtr& sharedPtr) //VG
+	//{
+
+	//}
 };

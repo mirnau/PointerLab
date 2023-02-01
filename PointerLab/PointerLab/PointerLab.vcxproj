@@ -133,6 +133,7 @@
     <ClCompile Include="TestShWeakVG.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="sandbox.hpp" />
     <ClInclude Include="SharedPtr.hpp" />
     <ClInclude Include="TestLevel.h" />
   </ItemGroup>
