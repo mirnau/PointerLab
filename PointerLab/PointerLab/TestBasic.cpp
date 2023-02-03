@@ -98,12 +98,9 @@ void TestBasic() {
         p1 = std::move(p3);
         assert(!p3);
         assert(p1->_c == 'c');
-        { //LÄRARENS MARKERING
-
-            //p1 = std::move(p1);
-            //assert(p1);
-            //assert(p1->_c == 'c');
-        }
+        //p1 = std::move(p1);
+        //assert(p1);
+        //assert(p1->_c == 'c');
         p1.reset();
         assert(p1.use_count() == 0 && !p1);
     }
@@ -126,12 +123,14 @@ void TestBasic() {
         assert(p2->_c == 'a');
     }
 #endif
+
 #if LEVEL>=7
-    {   //STRUKEN I INSTRUKTIONEN
-        //auto p1 = MakeShared<TestChar>();
-        //auto p2 = MakeShared<TestChar>('b');
-        //assert(p1->_c == 'x' && p2->_c == 'b');
-    }
+    //This is not part of the requirements
+    //{
+    //    auto p1 = MakeShared<TestChar>();
+    //    auto p2 = MakeShared<TestChar>('b');
+    //    assert(p1->_c == 'x' && p2->_c == 'b');
+    //}
 #endif
 #if LEVEL>=11
     {

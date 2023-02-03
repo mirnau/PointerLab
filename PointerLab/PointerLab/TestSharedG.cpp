@@ -185,11 +185,13 @@ void TestG() {
             swap(sp1, sp2);
             assert(sp1->value == 2.0f && sp2->value == 1.0f);
         }
-        //Make shared
-        {
-            //auto sp1 = MakeShared<C>(1.0f);
-            //assert(sp1->value == 1);
-        }}
+        //This is not part of the requirements
+        ////Make shared
+        //{
+        //    auto sp1 = MakeShared<C>(1.0f);
+        //    assert(sp1->value == 1);
+        //}
+    }
 }
 
 #endif G_BETYG

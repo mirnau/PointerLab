@@ -12,7 +12,7 @@
 #endif
 #endif  // _DEBUG
 
-#define LEVEL 7
+#define LEVEL 9
 //#define G_BETYG
 //#define VG_BETYG
 
@@ -59,7 +59,8 @@ level 6
 swap
 
 level 7
-MakeShared
+//This is not part of the requirements
+//MakeShared
 
 
 //Nu börjar VG
