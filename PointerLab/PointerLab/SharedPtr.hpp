@@ -60,18 +60,6 @@ struct RefCount
 	void DecrementShared()
 	{
 		--m_shared;
-
-		//if (m_shared <= 0)
-		//{
-		//	if (m_weak <= 0)
-		//	{
-		//		return false;
-		//	}
-
-		//	m_shared = 0;
-
-		//	return true;
-		//}
 	}
 
 private:
@@ -104,9 +92,10 @@ public:
 	~SharedPtr()
 	{
 		CHECK;
-		if (m_counter != nullptr)
+		if (m_ptr != nullptr)
 		{
-			m_counter->DecrementShared();
+			if (m_counter->SharedPtrSize() != 0)
+				m_counter->DecrementShared();
 
 			if (m_counter->SharedPtrSize() == 0)
 			{
@@ -120,7 +109,10 @@ public:
 		m_ptr(sharedPtr.get()),
 		m_counter(sharedPtr.m_counter) 
 	{
-		m_counter->IncrementShared();
+		if (m_ptr != nullptr)
+		{
+			m_counter->IncrementShared();
+		}
 
 		CHECK;
 	}
@@ -175,23 +167,31 @@ public:
 
 	SharedPtr& operator=(const SharedPtr& sharedPtr)
 	{
-		if (&sharedPtr == this)
-		{
+		if (sharedPtr.m_ptr == m_ptr)
 			return *this;
+
+		if (m_counter)
+		{
+			m_counter->DecrementShared();
+
+			if (m_counter->SharedPtrSize() == 0)
+			{
+				delete m_counter;
+				delete m_ptr;
+			}
 		}
 
-		delete m_ptr;
-		delete m_counter;
-
 		m_counter = sharedPtr.m_counter;
-		m_counter->IncrementShared();
 		m_ptr = sharedPtr.m_ptr;
+
+		if (m_ptr != nullptr)
+			m_counter->IncrementShared();
+
 		return *this;
 	}
 
 	SharedPtr& operator=(SharedPtr&& sharedPtr)
 	{
-
 		delete m_ptr;
 		delete m_counter;
 
