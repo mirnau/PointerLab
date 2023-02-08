@@ -2,70 +2,9 @@
 #include <utility>
 #include <cassert>
 #include <compare>
-
+#include "RefCount.hpp"
+#include "WeakPtr.hpp"
 #define CHECK assert(Invariant())
-
-template<class T>
-class WeakPtr
-{
-public:
-	WeakPtr()
-	{
-
-	}
-
-	~WeakPtr()
-	{
-
-	}
-};
-
-struct RefCount
-{
-	RefCount()
-	{
-		m_shared = 0;
-		m_weak = 0;
-	}
-
-	RefCount(bool isShared)
-	{
-		if (true)
-		{
-			m_shared = 1;
-			m_weak = 0;
-		}
-		else
-		{
-			m_shared = 0;
-			m_weak = 1;
-		}
-	}
-	
-	~RefCount()
-	{
-		
-	}
-
-	size_t SharedPtrSize()
-	{
-		return m_shared;
-	}
-
-	void IncrementShared()
-	{
-		++m_shared;
-	}
-
-	void DecrementShared()
-	{
-		--m_shared;
-	}
-
-private:
-	size_t m_shared;
-	size_t m_weak;
-};
 
 template< class T>
 //using IfNotSharedPtr = std::enable_if_t <(std::is_same<T, SharedPtr>)>;
@@ -76,7 +15,6 @@ private:
 	RefCount* m_counter;
 
 public:
-
 	explicit SharedPtr(T* ptr) :
 		m_ptr(ptr)
 	{
@@ -84,21 +22,20 @@ public:
 	}
 
 	SharedPtr(std::nullptr_t nPtr) noexcept :
-		m_ptr(nullptr) {CHECK;}
+		m_ptr(nullptr), m_counter(nullptr) {CHECK;}
 
 	SharedPtr() noexcept :
-		m_ptr(nullptr) {CHECK;}
+		m_ptr(nullptr), m_counter(nullptr) {CHECK;}
 
 	~SharedPtr()
 	{
 		CHECK;
-		if (m_ptr != nullptr)
-		{
+		if (m_ptr != nullptr) {
+
 			if (m_counter->SharedPtrSize() != 0)
 				m_counter->DecrementShared();
 
-			if (m_counter->SharedPtrSize() == 0)
-			{
+			if (m_counter->SharedPtrSize() == 0) {
 				delete m_ptr;
 				delete m_counter;
 			}
@@ -117,7 +54,18 @@ public:
 		CHECK;
 	}
 
-	SharedPtr(SharedPtr&& sharedPtr) :
+	explicit SharedPtr(WeakPtr<T>& weakPtr) 
+	{
+		m_ptr = weakPtr.get();
+		m_counter = weakPtr.counter();
+
+
+		m_counter->IncrementShared();
+
+		CHECK;
+	}
+
+	SharedPtr(SharedPtr&& sharedPtr) noexcept :
 		m_counter(sharedPtr.m_counter),
 		m_ptr(std::move(sharedPtr.m_ptr))
 	{
@@ -190,7 +138,7 @@ public:
 		return *this;
 	}
 
-	SharedPtr& operator=(SharedPtr&& sharedPtr)
+	SharedPtr& operator=(SharedPtr&& sharedPtr) noexcept
 	{
 		delete m_ptr;
 		delete m_counter;
@@ -203,6 +151,11 @@ public:
 		
 		CHECK;
 		return *this;
+	}
+
+	RefCount* counter()
+	{
+		return m_counter;
 	}
 
 	T& operator*()
@@ -243,9 +196,4 @@ public:
 	{
 		std::swap(lhs, rhs);
 	}
-
-	//SharedPtr(WeakPtr& sharedPtr) //VG
-	//{
-		
-	//}
 };

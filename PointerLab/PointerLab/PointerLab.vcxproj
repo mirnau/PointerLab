@@ -134,9 +134,11 @@
     <ClCompile Include="TestShWeakVG.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="RefCount.hpp" />
     <ClInclude Include="sandbox.hpp" />
     <ClInclude Include="SharedPtr.hpp" />
     <ClInclude Include="TestLevel.h" />
+    <ClInclude Include="WeakPtr.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
