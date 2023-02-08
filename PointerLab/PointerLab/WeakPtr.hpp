@@ -60,12 +60,28 @@ public:
 	}
 
 
-	//WeakPtr& operator=(WeakPtr& weakPtr)
-	//{
-	//	m_ptr = weakPtr.m_ptr;
-	//	m_counter = weakPtr.m_counter;
-	//	m_counter->IncrementWeak();
-	//}
+	WeakPtr& operator=(WeakPtr& weakPtr)
+	{
+		if (weakPtr.m_ptr == m_ptr)
+			return *this;
+
+		if (m_ptr)
+		{
+			m_counter->DecrementWeak();
+
+			if (m_counter->WeakPtrSize() == 0) {
+				delete m_ptr;
+				delete m_counter;
+			}
+		}
+		m_counter = weakPtr.m_counter;
+		m_ptr = weakPtr.m_ptr;
+
+		if (m_ptr != nullptr)
+			m_counter->WeakPtrSize();
+
+		return *this;
+	}
 
 
 	WeakPtr& operator=(SharedPtr<T>& sharedPtr)
@@ -77,10 +93,14 @@ public:
 		return *this;
 	}
 
-	//void reset()
-	//{
-
-	//}
+	void reset()
+	{
+		m_counter->DecrementWeak();
+		delete m_counter;
+		delete m_ptr;
+		m_counter = nullptr;
+		m_ptr = nullptr;
+	}
 
 	T* get()
 	{
@@ -122,8 +142,10 @@ public:
 		return m_counter->WeakPtrSize();
 	}
 
-	//void swap(WeakPtr lhs, WeakPtr rhs)
-	//{
-
-	//}
+	friend void swap(WeakPtr<T>& lhs, WeakPtr<T>& rhs)
+	{
+		WeakPtr<T> temp = lhs;
+		lhs = rhs;
+		rhs = temp;
+	}
 };
