@@ -8,6 +8,7 @@
 template<class T> class SharedPtr;
 template<class T>
 
+
 class WeakPtr
 {
 private:
@@ -21,8 +22,9 @@ public:
 		CHECK;
 	}
 
-	WeakPtr(WeakPtr& weakPtr) :
-		m_ptr(weakPtr.m_ptr), m_counter(weakPtr.m_counter)
+	WeakPtr(const WeakPtr& weakPtr) :
+		m_ptr(weakPtr.m_ptr), 
+		m_counter(weakPtr.m_counter)
 	{
 		if (m_counter == nullptr)
 		{
@@ -34,11 +36,10 @@ public:
 		CHECK;
 	}
 
-	WeakPtr(SharedPtr<T>& sharedPtr)
+	WeakPtr(const SharedPtr<T>& sharedPtr) noexcept :
+		m_ptr(sharedPtr.cget()), 
+		m_counter(sharedPtr.counter())
 	{
-
-		*this = sharedPtr;
-
 		if (m_counter)
 		{
 			m_counter->IncrementWeak();
@@ -84,7 +85,7 @@ public:
 	}
 
 
-	WeakPtr& operator=(SharedPtr<T>& sharedPtr)
+	WeakPtr<T>& operator=(SharedPtr<T>& sharedPtr)
 	{
 		m_ptr = sharedPtr.get();
 		m_counter = sharedPtr.counter();
@@ -107,7 +108,17 @@ public:
 		return m_ptr;
 	}
 
+	T* get() const
+	{
+		return m_ptr;
+	}
+
 	RefCount* counter()
+	{
+		return m_counter;
+	}
+
+	RefCount* counter() const
 	{
 		return m_counter;
 	}

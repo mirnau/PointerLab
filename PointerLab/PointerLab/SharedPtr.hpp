@@ -7,7 +7,7 @@
 #define CHECK assert(Invariant())
 
 template< class T>
-//using IfNotSharedPtr = std::enable_if_t <(std::is_same<T, SharedPtr>)>;
+
 class SharedPtr
 {
 private:
@@ -42,8 +42,9 @@ public:
 		}
 	}
 
-	SharedPtr(SharedPtr& sharedPtr) noexcept :
-		m_ptr(sharedPtr.get()),
+	//CHANGED
+	SharedPtr(const SharedPtr& sharedPtr) noexcept :
+		m_ptr(sharedPtr.m_ptr),
 		m_counter(sharedPtr.m_counter) 
 	{
 		if (m_ptr != nullptr)
@@ -53,29 +54,34 @@ public:
 
 		CHECK;
 	}
+	//CHANGED
+	explicit SharedPtr(const WeakPtr<T>& weakPtr) :
+		m_ptr(weakPtr.get()), 
+		m_counter(weakPtr.counter())
 
-	explicit SharedPtr(WeakPtr<T>& weakPtr) 
 	{
-		m_ptr = weakPtr.get();
-		m_counter = weakPtr.counter();
-
-
+		
 		m_counter->IncrementShared();
 
 		CHECK;
 	}
-
+	//CHANGED - not const m_counter ut med STD::move
 	SharedPtr(SharedPtr&& sharedPtr) noexcept :
 		m_counter(sharedPtr.m_counter),
-		m_ptr(std::move(sharedPtr.m_ptr))
+		m_ptr(sharedPtr.m_ptr)
 	{
 		sharedPtr.m_ptr = nullptr;
 		sharedPtr.m_counter = nullptr;
-
 		CHECK;
 	}
 
-	T* get()
+	T* get() noexcept
+	{
+		return m_ptr;
+	}
+
+	//CHANGED added const renamed to data from get
+	T* cget() const
 	{
 		return m_ptr;
 	}
@@ -153,7 +159,7 @@ public:
 		return *this;
 	}
 
-	RefCount* counter()
+	RefCount* counter() const
 	{
 		return m_counter;
 	}
