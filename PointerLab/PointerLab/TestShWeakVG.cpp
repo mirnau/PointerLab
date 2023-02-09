@@ -57,7 +57,7 @@ void TestVGWeak() {
     assert(wp14.expired());
     {
         auto w = WeakPtr<int>(SharedPtr<int>());
-        //w = SharedPtr<int>();
+        w = SharedPtr<int>();
     }
 
     //Shared(weak)
@@ -212,7 +212,6 @@ void TestVG() {
         assert(sp1.Invariant()); assert(sp10.Invariant());
         assert(!sp10 && !sp1);
     }
-
 }
 
 #endif VG_BETYG

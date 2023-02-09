@@ -9,7 +9,7 @@ struct RefCount
 
 	RefCount(bool isShared)
 	{
-		if (true)
+		if (isShared)
 		{
 			m_shared = 1;
 			m_weak = 0;

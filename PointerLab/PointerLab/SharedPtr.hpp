@@ -2,6 +2,7 @@
 #include <utility>
 #include <cassert>
 #include <compare>
+#include <memory>
 #include "RefCount.hpp"
 #include "WeakPtr.hpp"
 #define CHECK assert(Invariant())
@@ -42,7 +43,6 @@ public:
 		}
 	}
 
-	//CHANGED
 	SharedPtr(const SharedPtr& sharedPtr) noexcept :
 		m_ptr(sharedPtr.m_ptr),
 		m_counter(sharedPtr.m_counter) 
@@ -54,18 +54,22 @@ public:
 
 		CHECK;
 	}
-	//CHANGED
-	explicit SharedPtr(const WeakPtr<T>& weakPtr) :
+	
+	explicit SharedPtr(WeakPtr<T>& weakPtr) :
 		m_ptr(weakPtr.get()), 
 		m_counter(weakPtr.counter())
-
 	{
-		
-		m_counter->IncrementShared();
+		if (weakPtr.expired())
+		{
+			throw std::bad_weak_ptr();
+		}
+
+		if(m_counter)
+			m_counter->IncrementShared();
 
 		CHECK;
 	}
-	//CHANGED - not const m_counter ut med STD::move
+
 	SharedPtr(SharedPtr&& sharedPtr) noexcept :
 		m_counter(sharedPtr.m_counter),
 		m_ptr(sharedPtr.m_ptr)
@@ -75,12 +79,11 @@ public:
 		CHECK;
 	}
 
-	T* get() noexcept
+	T* get()
 	{
 		return m_ptr;
 	}
 
-	//CHANGED added const renamed to data from get
 	T* cget() const
 	{
 		return m_ptr;
@@ -103,8 +106,12 @@ public:
 	void reset()
 	{
 		m_counter->DecrementShared();
-		delete m_counter;
-		delete m_ptr;
+
+		if (m_counter->SharedPtrSize() == 0)
+		{
+			delete m_ptr;
+		}
+
 		m_counter = nullptr;
 		m_ptr = nullptr;
 	}
@@ -146,6 +153,11 @@ public:
 
 	SharedPtr& operator=(SharedPtr&& sharedPtr) noexcept
 	{
+		if (sharedPtr == *this)
+		{
+			return * this;
+		}
+
 		delete m_ptr;
 		delete m_counter;
 

@@ -26,12 +26,10 @@ public:
 		m_ptr(weakPtr.m_ptr), 
 		m_counter(weakPtr.m_counter)
 	{
-		if (m_counter == nullptr)
+		if (m_counter != nullptr)
 		{
-			m_counter = new RefCount();
+			m_counter->IncrementWeak();
 		}
-		
-		m_counter->IncrementWeak();
 		
 		CHECK;
 	}
@@ -52,7 +50,10 @@ public:
 	{
 		if (expired())
 		{
-			delete m_counter;
+			if (m_counter)
+			{
+				delete m_counter;
+			}
 		}
 		else
 		{
@@ -61,7 +62,7 @@ public:
 	}
 
 
-	WeakPtr& operator=(WeakPtr& weakPtr)
+	WeakPtr& operator=(const WeakPtr& weakPtr)
 	{
 		if (weakPtr.m_ptr == m_ptr)
 			return *this;
@@ -85,11 +86,15 @@ public:
 	}
 
 
-	WeakPtr<T>& operator=(SharedPtr<T>& sharedPtr)
+	WeakPtr<T>& operator=(const SharedPtr<T>& sharedPtr)
 	{
-		m_ptr = sharedPtr.get();
+		m_ptr = sharedPtr.cget();
 		m_counter = sharedPtr.counter();
-		m_counter->IncrementWeak();
+
+		if (m_ptr != nullptr)
+		{
+			m_counter->IncrementWeak();
+		}
 
 		return *this;
 	}
@@ -97,8 +102,13 @@ public:
 	void reset()
 	{
 		m_counter->DecrementWeak();
-		delete m_counter;
-		delete m_ptr;
+
+		/*if (m_counter->SharedPtrSize() > 0)
+		{
+			delete m_counter;
+			delete m_ptr;
+		}*/
+
 		m_counter = nullptr;
 		m_ptr = nullptr;
 	}
@@ -130,17 +140,15 @@ public:
 
 	bool expired()
 	{
-		if (m_counter == nullptr)
+		if (m_counter)
 		{
-			return true;
+			if (m_counter->SharedPtrSize() > 0)
+			{
+				return false;
+			}
 		}
 
-		if (m_counter->WeakPtrSize() == 0)
-		{
-			return true;
-		}
-
-		return false;
+		return true;
 	}
 
 	bool Invariant()
