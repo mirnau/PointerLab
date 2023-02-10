@@ -23,22 +23,22 @@ public:
 	}
 
 	WeakPtr(const WeakPtr& weakPtr) :
-		m_ptr(weakPtr.m_ptr),
+		m_ptr(weakPtr.m_ptr), 
 		m_counter(weakPtr.m_counter)
 	{
 		if (m_counter != nullptr)
 		{
 			m_counter->IncrementWeak();
 		}
-
+		
 		CHECK;
 	}
 
 	WeakPtr(const SharedPtr<T>& sharedPtr) noexcept :
-		m_ptr(sharedPtr.cget()),
+		m_ptr(sharedPtr.cget()), 
 		m_counter(sharedPtr.counter())
 	{
-		if (m_counter != nullptr)
+		if (m_counter)
 		{
 			m_counter->IncrementWeak();
 		}
@@ -48,16 +48,17 @@ public:
 
 	~WeakPtr()
 	{
-		if (m_counter)
+		if (expired())
 		{
-			m_counter->DecrementWeak();
-			
-			if (expired())
+			if (m_counter)
 			{
 				delete m_counter;
 			}
 		}
-		
+		else
+		{
+			m_counter->DecrementWeak();
+		}
 	}
 
 
@@ -81,16 +82,12 @@ public:
 		if (m_ptr != nullptr)
 			m_counter->WeakPtrSize();
 
-		CHECK;
 		return *this;
 	}
 
 
 	WeakPtr<T>& operator=(const SharedPtr<T>& sharedPtr)
 	{
-		/*	delete m_ptr;
-			delete m_counter;*/
-
 		m_ptr = sharedPtr.cget();
 		m_counter = sharedPtr.counter();
 
@@ -99,7 +96,6 @@ public:
 			m_counter->IncrementWeak();
 		}
 
-		CHECK;
 		return *this;
 	}
 
