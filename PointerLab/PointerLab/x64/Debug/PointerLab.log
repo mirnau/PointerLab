@@ -1,4 +1,5 @@
-﻿  TestBasic.cpp
+﻿  Main.cpp
+  TestBasic.cpp
   TestShWeakVG.cpp
   TestSharedG.cpp
   Generating Code...
