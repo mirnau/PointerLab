@@ -8,15 +8,15 @@
 template<class T> class SharedPtr;
 template<class T>
 
-
 class WeakPtr
 {
-private:
+	template <class T>
+	friend class SharedPtr;
+
 	T* m_ptr;
 	RefCount* m_counter;
-public:
 
-	//friend class RefCount;
+public:
 
 	//Void Constructor
 	WeakPtr() noexcept :
@@ -25,42 +25,33 @@ public:
 	}
 
 	WeakPtr(const WeakPtr& weakPtr) :
-		m_ptr(weakPtr.m_ptr), 
+		m_ptr(weakPtr.m_ptr),
 		m_counter(weakPtr.m_counter)
 	{
 		if (m_counter != nullptr)
 		{
 			++m_counter->m_weak;
 		}
-		
+
 		CHECK;
 	}
 
 	WeakPtr(const SharedPtr<T>& sharedPtr) noexcept :
-		m_ptr(sharedPtr.cget()), 
-		m_counter(sharedPtr.counter())
+		m_ptr(sharedPtr.m_ptr),
+		m_counter(sharedPtr.m_counter)
 	{
 		if (m_counter)
-		{
 			++m_counter->m_weak;
-		}
 
 		CHECK;
 	}
 
 	~WeakPtr()
 	{
-		if (expired())
-		{
-			if (m_counter)
-			{
-				delete m_counter;
-			}
-		}
-		else
-		{
+		CHECK;
+
+		if (!expired())
 			--m_counter->m_weak;
-		}
 	}
 
 	WeakPtr& operator=(const WeakPtr& weakPtr)
@@ -68,20 +59,19 @@ public:
 		if (weakPtr.m_ptr == m_ptr)
 			return *this;
 
-		if (m_ptr)
+		if (!expired())
 		{
-			--m_counter->m_weak;
-
-			if (m_counter->m_weak == 0) {
-				delete m_ptr;
-				delete m_counter;
-			}
+			if (m_counter)
+				--m_counter->m_weak;
 		}
+
 		m_counter = weakPtr.m_counter;
 		m_ptr = weakPtr.m_ptr;
 
-		if (m_ptr != nullptr)
-			m_counter->m_weak;
+		if (m_counter)
+			++m_counter->m_weak;
+
+		CHECK;
 
 		return *this;
 	}
@@ -89,49 +79,34 @@ public:
 
 	WeakPtr<T>& operator=(const SharedPtr<T>& sharedPtr)
 	{
-		m_ptr = sharedPtr.cget();
-		m_counter = sharedPtr.counter();
 
-		if (m_ptr != nullptr)
+		if (!expired())
 		{
-			++m_counter->m_weak;
+			if(m_counter)
+				--m_counter->m_shared;
 		}
+
+		m_ptr = sharedPtr.m_ptr;
+		m_counter = sharedPtr.m_counter;
+		
+		if (m_counter)
+			++m_counter->m_weak;
+
+		CHECK;
 
 		return *this;
 	}
 
 	void reset()
 	{
-		--m_counter->m_weak;
-
-		/*if (m_counter->m_shared > 0)
+		if (!expired());
 		{
-			delete m_counter;
-			delete m_ptr;
-		}*/
+			--m_counter->m_weak;
+			m_counter = nullptr;
+			m_ptr = nullptr;
+		}
 
-		m_counter = nullptr;
-		m_ptr = nullptr;
-	}
-
-	T* get()
-	{
-		return m_ptr;
-	}
-
-	T* get() const
-	{
-		return m_ptr;
-	}
-
-	RefCount* counter()
-	{
-		return m_counter;
-	}
-
-	RefCount* counter() const
-	{
-		return m_counter;
+		CHECK;
 	}
 
 	SharedPtr<T> lock()
@@ -139,30 +114,34 @@ public:
 		return expired() ? SharedPtr<T>() : SharedPtr<T>(*this);
 	}
 
-	bool expired()
+	bool expired() const
 	{
-		if (m_counter)
-		{
-			if (m_counter->m_shared > 0)
-			{
-				return false;
-			}
-		}
+		if (m_counter == nullptr)
+			return true;
 
-		return true;
-	}
+		if (m_counter->m_shared == 0) {
 
-	bool Invariant()
-	{
-		if (m_ptr == nullptr)
-		{
+			--m_counter->m_weak;
+
+			if (m_counter->m_weak == 0)
+				delete m_counter;
+
+			const_cast<WeakPtr*>(this)->m_counter = nullptr;
 			return true;
 		}
 
+		return false;
+	}
+
+	bool Invariant() const noexcept
+	{
+		if (m_ptr == nullptr)
+				return true;
+	
 		return m_counter->m_weak;
 	}
 
-	friend void swap(WeakPtr<T>& lhs, WeakPtr<T>& rhs)
+	friend void swap(WeakPtr<T>& lhs, WeakPtr<T>& rhs) noexcept
 	{
 		WeakPtr<T> temp = lhs;
 		lhs = rhs;

@@ -1,6 +1,21 @@
-﻿  Main.cpp
-  TestBasic.cpp
+﻿  TestBasic.cpp
+C:\Users\Mikael\source\Repos\AdvCPP\PointerLab\PointerLab\PointerLab\WeakPtr.hpp(102,18): warning C4390: ';': empty controlled statement found; is this the intent?
+C:\Users\Mikael\source\Repos\AdvCPP\PointerLab\PointerLab\PointerLab\WeakPtr.hpp(101,1): message : while compiling class template member function 'void WeakPtr<T>::reset(void)'
+          with
+          [
+              T=TestChar
+          ]
+C:\Users\Mikael\source\Repos\AdvCPP\PointerLab\PointerLab\PointerLab\TestBasic.cpp(167,17): message : see reference to function template instantiation 'void WeakPtr<T>::reset(void)' being compiled
+          with
+          [
+              T=TestChar
+          ]
+C:\Users\Mikael\source\Repos\AdvCPP\PointerLab\PointerLab\PointerLab\TestBasic.cpp(137,18): message : see reference to class template instantiation 'WeakPtr<T>' being compiled
+          with
+          [
+              T=TestChar
+          ]
   TestShWeakVG.cpp
   TestSharedG.cpp
   Generating Code...
-  PointerLab.vcxproj -> M:\PointerLab\PointerLab\x64\Debug\PointerLab.exe
+  PointerLab.vcxproj -> C:\Users\Mikael\source\Repos\AdvCPP\PointerLab\PointerLab\x64\Debug\PointerLab.exe

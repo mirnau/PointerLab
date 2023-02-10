@@ -165,7 +165,7 @@ void TestVG() {
     catch (const std::bad_weak_ptr&) {
         ;
     }
-
+    
     //-	funktioner:		
     //	o	lock()		VG
     auto sp51 = wp11.lock();
@@ -185,7 +185,6 @@ void TestVG() {
     sp51 = std::move(sp61);
     sp51 = std::move(sp51);
     assert(sp51->value == 55);
-
 
 
     //-	Tilldelning från en	

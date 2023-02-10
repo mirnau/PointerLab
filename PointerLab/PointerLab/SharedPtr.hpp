@@ -11,7 +11,9 @@ template< class T>
 
 class SharedPtr
 {
-private:
+	template <class T>
+	friend class WeakPtr;
+
 	T* m_ptr;
 	RefCount* m_counter;
 
@@ -38,7 +40,8 @@ public:
 			if (m_counter->m_shared != 0)
 				--m_counter->m_shared;
 
-			if (m_counter->m_shared == 0) {
+			if (m_counter->m_shared == 0) 
+			{
 				delete m_ptr;
 				delete m_counter;
 			}
@@ -58,13 +61,11 @@ public:
 	}
 	
 	explicit SharedPtr(WeakPtr<T>& weakPtr) :
-		m_ptr(weakPtr.get()), 
-		m_counter(weakPtr.counter())
+		m_ptr(weakPtr.m_ptr), 
+		m_counter(weakPtr.m_counter)
 	{
 		if (weakPtr.expired())
-		{
 			throw std::bad_weak_ptr();
-		}
 
 		if(m_counter)
 			++m_counter->m_shared;
@@ -81,12 +82,7 @@ public:
 		CHECK;
 	}
 
-	T* get()
-	{
-		return m_ptr;
-	}
-
-	T* cget() const
+	constexpr T* get() const
 	{
 		return m_ptr;
 	}
@@ -94,13 +90,9 @@ public:
 	size_t use_count() const
 	{
 		if (m_counter == nullptr)
-		{
 			return 0;
-		}
 		else
-		{
 			return m_counter->m_shared;
-		}
 
 		CHECK;
 	}
@@ -114,9 +106,7 @@ public:
 			delete m_ptr;
 			
 			if (m_counter->m_weak == 0)
-			{
 				delete m_counter;
-			}
 		}
 
 		m_counter = nullptr;
@@ -126,14 +116,12 @@ public:
 	bool Invariant() const noexcept
 	{
 		if (m_ptr == nullptr)
-		{
 			return true;
-		}
 
 		return m_counter->m_shared;
 	}
 
-	SharedPtr& operator=(const SharedPtr& sharedPtr)
+	SharedPtr& operator=(const SharedPtr& sharedPtr) noexcept
 	{
 		if (sharedPtr.m_ptr == m_ptr)
 			return *this;
@@ -161,9 +149,7 @@ public:
 	SharedPtr& operator=(SharedPtr&& sharedPtr) noexcept
 	{
 		if (sharedPtr == *this)
-		{
 			return * this;
-		}
 
 		delete m_ptr;
 		delete m_counter;
@@ -178,17 +164,12 @@ public:
 		return *this;
 	}
 
-	RefCount* counter() const
-	{
-		return m_counter;
-	}
-
-	T& operator*()
+	T& operator*() const
 	{
 		return *m_ptr;
 	}
 
-	T* operator->()
+	T* operator->() const
 	{
 		return m_ptr;
 	}
@@ -198,21 +179,18 @@ public:
 		return (m_ptr != nullptr);
 	}
 
-	friend int operator<=>(SharedPtr& lhs, SharedPtr& rhs)
+	friend int operator<=>(const SharedPtr& lhs, const SharedPtr& rhs)
 	{
 		if (lhs.m_ptr < rhs.m_ptr)
-		{
 			return -1;
-		}
+
 		else if (lhs.m_ptr > rhs.m_ptr)
-		{
 			return 1;
-		}
 
 		return 0;
 	}
 
-	friend bool operator==(const SharedPtr& lhs, const SharedPtr& rhs)
+	friend bool operator==(const SharedPtr& lhs, const SharedPtr& rhs) 
 	{
 		return lhs.m_ptr == rhs.m_ptr;
 	}

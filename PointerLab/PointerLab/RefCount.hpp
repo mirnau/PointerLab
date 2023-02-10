@@ -15,4 +15,3 @@ class RefCount
 	size_t m_shared;
 	size_t m_weak;
 };
-
