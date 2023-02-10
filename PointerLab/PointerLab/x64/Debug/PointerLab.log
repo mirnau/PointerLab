@@ -1,6 +1,6 @@
 ﻿  TestBasic.cpp
-C:\Users\Mikael\source\Repos\AdvCPP\PointerLab\PointerLab\PointerLab\WeakPtr.hpp(102,18): warning C4390: ';': empty controlled statement found; is this the intent?
-C:\Users\Mikael\source\Repos\AdvCPP\PointerLab\PointerLab\PointerLab\WeakPtr.hpp(101,1): message : while compiling class template member function 'void WeakPtr<T>::reset(void)'
+C:\Users\Mikael\source\Repos\AdvCPP\PointerLab\PointerLab\PointerLab\WeakPtr.hpp(59,18): warning C4390: ';': empty controlled statement found; is this the intent?
+C:\Users\Mikael\source\Repos\AdvCPP\PointerLab\PointerLab\PointerLab\WeakPtr.hpp(58,1): message : while compiling class template member function 'void WeakPtr<T>::reset(void)'
           with
           [
               T=TestChar

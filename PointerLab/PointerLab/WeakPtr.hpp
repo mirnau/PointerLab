@@ -2,7 +2,7 @@
 #include "RefCount.hpp"
 #include "SharedPtr.hpp"
 #include <cassert>
-#include <algorithm>
+
 #define CHECK assert(Invariant())
 
 template<class T> class SharedPtr;
@@ -54,49 +54,6 @@ public:
 			--m_counter->m_weak;
 	}
 
-	WeakPtr& operator=(const WeakPtr& weakPtr)
-	{
-		if (weakPtr.m_ptr == m_ptr)
-			return *this;
-
-		if (!expired())
-		{
-			if (m_counter)
-				--m_counter->m_weak;
-		}
-
-		m_counter = weakPtr.m_counter;
-		m_ptr = weakPtr.m_ptr;
-
-		if (m_counter)
-			++m_counter->m_weak;
-
-		CHECK;
-
-		return *this;
-	}
-
-
-	WeakPtr<T>& operator=(const SharedPtr<T>& sharedPtr)
-	{
-
-		if (!expired())
-		{
-			if(m_counter)
-				--m_counter->m_shared;
-		}
-
-		m_ptr = sharedPtr.m_ptr;
-		m_counter = sharedPtr.m_counter;
-		
-		if (m_counter)
-			++m_counter->m_weak;
-
-		CHECK;
-
-		return *this;
-	}
-
 	void reset()
 	{
 		if (!expired());
@@ -139,6 +96,49 @@ public:
 				return true;
 	
 		return m_counter->m_weak;
+	}
+
+	WeakPtr& operator=(const WeakPtr& weakPtr)
+	{
+		if (weakPtr.m_ptr == m_ptr)
+			return *this;
+
+		if (!expired())
+		{
+			if (m_counter)
+				--m_counter->m_weak;
+		}
+
+		m_counter = weakPtr.m_counter;
+		m_ptr = weakPtr.m_ptr;
+
+		if (m_counter)
+			++m_counter->m_weak;
+
+		CHECK;
+
+		return *this;
+	}
+
+
+	WeakPtr<T>& operator=(const SharedPtr<T>& sharedPtr)
+	{
+
+		if (!expired())
+		{
+			if (m_counter)
+				--m_counter->m_shared;
+		}
+
+		m_ptr = sharedPtr.m_ptr;
+		m_counter = sharedPtr.m_counter;
+
+		if (m_counter)
+			++m_counter->m_weak;
+
+		CHECK;
+
+		return *this;
 	}
 
 	friend void swap(WeakPtr<T>& lhs, WeakPtr<T>& rhs) noexcept

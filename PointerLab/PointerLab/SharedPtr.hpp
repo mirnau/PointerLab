@@ -1,10 +1,9 @@
 #pragma once
-#include <utility>
 #include <cassert>
-#include <compare>
 #include <memory>
 #include "RefCount.hpp"
 #include "WeakPtr.hpp"
+
 #define CHECK assert(Invariant())
 
 template< class T>
