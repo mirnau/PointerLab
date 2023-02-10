@@ -1,64 +1,17 @@
 #pragma once
-struct RefCount
+
+class RefCount
 {
-	RefCount()
-	{
-		m_shared = 0;
-		m_weak = 0;
-	}
+	template <class T>
+	friend class SharedPtr;
 
-	RefCount(bool isShared)
-	{
-		if (isShared)
-		{
-			m_shared = 1;
-			m_weak = 0;
-		}
-		else
-		{
-			m_shared = 0;
-			m_weak = 1;
-		}
-	}
+	template <class T>
+	friend class WeakPtr;
 
-	~RefCount()
-	{
+	RefCount() : 
+		m_shared(0),
+		m_weak(0) {}
 
-	}
-
-	//WEAK
-	size_t WeakPtrSize()
-	{
-		return m_weak;
-	}
-
-	void IncrementWeak()
-	{
-		++m_weak;
-	}
-
-	void DecrementWeak()
-	{
-		--m_weak;
-	}
-
-	//SHARED
-	size_t SharedPtrSize()
-	{
-		return m_shared;
-	}
-
-	void IncrementShared()
-	{
-		++m_shared;
-	}
-
-	void DecrementShared()
-	{
-		--m_shared;
-	}
-
-private:
 	size_t m_shared;
 	size_t m_weak;
 };

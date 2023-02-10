@@ -16,10 +16,12 @@ private:
 	RefCount* m_counter;
 
 public:
+
 	explicit SharedPtr(T* ptr) :
 		m_ptr(ptr)
 	{
-		m_counter = new RefCount(true);
+		m_counter = new RefCount();
+		++m_counter->m_shared;
 	}
 
 	SharedPtr(std::nullptr_t nPtr) noexcept :
@@ -33,10 +35,10 @@ public:
 		CHECK;
 		if (m_ptr != nullptr) {
 
-			if (m_counter->SharedPtrSize() != 0)
-				m_counter->DecrementShared();
+			if (m_counter->m_shared != 0)
+				--m_counter->m_shared;
 
-			if (m_counter->SharedPtrSize() == 0) {
+			if (m_counter->m_shared == 0) {
 				delete m_ptr;
 				delete m_counter;
 			}
@@ -49,7 +51,7 @@ public:
 	{
 		if (m_ptr != nullptr)
 		{
-			m_counter->IncrementShared();
+			++m_counter->m_shared;
 		}
 
 		CHECK;
@@ -65,7 +67,7 @@ public:
 		}
 
 		if(m_counter)
-			m_counter->IncrementShared();
+			++m_counter->m_shared;
 
 		CHECK;
 	}
@@ -97,7 +99,7 @@ public:
 		}
 		else
 		{
-			return m_counter->SharedPtrSize();
+			return m_counter->m_shared;
 		}
 
 		CHECK;
@@ -105,11 +107,16 @@ public:
 
 	void reset()
 	{
-		m_counter->DecrementShared();
+		--m_counter->m_shared;
 
-		if (m_counter->SharedPtrSize() == 0)
+		if (m_counter->m_shared == 0)
 		{
 			delete m_ptr;
+			
+			if (m_counter->m_weak == 0)
+			{
+				delete m_counter;
+			}
 		}
 
 		m_counter = nullptr;
@@ -123,7 +130,7 @@ public:
 			return true;
 		}
 
-		return m_counter->SharedPtrSize();
+		return m_counter->m_shared;
 	}
 
 	SharedPtr& operator=(const SharedPtr& sharedPtr)
@@ -133,9 +140,9 @@ public:
 
 		if (m_counter)
 		{
-			m_counter->DecrementShared();
+			--m_counter->m_shared;
 
-			if (m_counter->SharedPtrSize() == 0)
+			if (m_counter->m_shared == 0)
 			{
 				delete m_counter;
 				delete m_ptr;
@@ -146,7 +153,7 @@ public:
 		m_ptr = sharedPtr.m_ptr;
 
 		if (m_ptr != nullptr)
-			m_counter->IncrementShared();
+			++m_counter->m_shared;
 
 		return *this;
 	}

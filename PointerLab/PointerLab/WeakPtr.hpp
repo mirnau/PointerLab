@@ -16,6 +16,8 @@ private:
 	RefCount* m_counter;
 public:
 
+	//friend class RefCount;
+
 	//Void Constructor
 	WeakPtr() noexcept :
 		m_ptr(nullptr), m_counter(nullptr) {
@@ -28,7 +30,7 @@ public:
 	{
 		if (m_counter != nullptr)
 		{
-			m_counter->IncrementWeak();
+			++m_counter->m_weak;
 		}
 		
 		CHECK;
@@ -40,7 +42,7 @@ public:
 	{
 		if (m_counter)
 		{
-			m_counter->IncrementWeak();
+			++m_counter->m_weak;
 		}
 
 		CHECK;
@@ -57,10 +59,9 @@ public:
 		}
 		else
 		{
-			m_counter->DecrementWeak();
+			--m_counter->m_weak;
 		}
 	}
-
 
 	WeakPtr& operator=(const WeakPtr& weakPtr)
 	{
@@ -69,9 +70,9 @@ public:
 
 		if (m_ptr)
 		{
-			m_counter->DecrementWeak();
+			--m_counter->m_weak;
 
-			if (m_counter->WeakPtrSize() == 0) {
+			if (m_counter->m_weak == 0) {
 				delete m_ptr;
 				delete m_counter;
 			}
@@ -80,7 +81,7 @@ public:
 		m_ptr = weakPtr.m_ptr;
 
 		if (m_ptr != nullptr)
-			m_counter->WeakPtrSize();
+			m_counter->m_weak;
 
 		return *this;
 	}
@@ -93,7 +94,7 @@ public:
 
 		if (m_ptr != nullptr)
 		{
-			m_counter->IncrementWeak();
+			++m_counter->m_weak;
 		}
 
 		return *this;
@@ -101,9 +102,9 @@ public:
 
 	void reset()
 	{
-		m_counter->DecrementWeak();
+		--m_counter->m_weak;
 
-		/*if (m_counter->SharedPtrSize() > 0)
+		/*if (m_counter->m_shared > 0)
 		{
 			delete m_counter;
 			delete m_ptr;
@@ -142,7 +143,7 @@ public:
 	{
 		if (m_counter)
 		{
-			if (m_counter->SharedPtrSize() > 0)
+			if (m_counter->m_shared > 0)
 			{
 				return false;
 			}
@@ -158,7 +159,7 @@ public:
 			return true;
 		}
 
-		return m_counter->WeakPtrSize();
+		return m_counter->m_weak;
 	}
 
 	friend void swap(WeakPtr<T>& lhs, WeakPtr<T>& rhs)
